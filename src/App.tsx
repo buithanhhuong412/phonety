@@ -1,19 +1,78 @@
+import { useState } from "react";
 import "./index.css";
 
+type Result = {
+  text: string;
+  phonetics: string;
+};
+
+const demoResults: Result[] = [
+  {
+    text: "There are aliens out there, somewhere.",
+    phonetics:
+      "ðər ɑːr ˈeɪliənz aʊt ðeər, ˈsʌmwɛər.",
+  },
+  {
+    text: "I strongly believe this.",
+    phonetics:
+      "aɪ ˈstrɒŋli bɪˈliːv ðɪs.",
+  },
+];
+
 function App() {
+  const [text, setText] = useState(
+    "There are aliens out there, somewhere. I strongly believe this."
+  );
+
+  const [results, setResults] = useState<Result[]>(demoResults);
+
+  const [accent, setAccent] = useState<"British" | "American">(
+    "British"
+  );
+
+  const [onlyPhonetics, setOnlyPhonetics] = useState(false);
+
+  const handleLookup = () => {
+    const value = text.trim();
+
+    if (!value) {
+      setResults([]);
+      return;
+    }
+
+    // Temporary result.
+    // Later we will replace this with the real IPA data source.
+    setResults([
+      {
+        text: value,
+        phonetics:
+          accent === "British"
+            ? "ðə ˈwɜːd ɪz ˈprəʊnənst"
+            : "ðə ˈwɝːd ɪz ˈproʊnənst",
+      },
+    ]);
+  };
+
+  const handleClear = () => {
+    setText("");
+    setResults([]);
+  };
+
   return (
     <main className="phonety">
-      {/* Header */}
+      {/* HEADER */}
+
       <header className="header">
         <div className="logo">/p/</div>
 
         <div className="header-right">
-          <button>VN⌄</button>
-          <button>Feedback</button>
+          <button type="button">VN⌄</button>
+          <button type="button">Feedback</button>
         </div>
       </header>
 
-      {/* Hero */}
+      {/* HERO */}
+
       <section className="hero">
         <h1>
           Look up your phonetics from
@@ -22,68 +81,109 @@ function App() {
         </h1>
       </section>
 
-      {/* Workspace */}
+      {/* WORKSPACE */}
+
       <section className="workspace">
-        {/* Left */}
+
+        {/* INPUT */}
+
         <div className="input-card">
-          <p>
-            There are aliens out there, somewhere. I strongly believe this.
-            Not sure what they look like, though. I really doubt they are
-            green, like they are in science fiction movies.
-          </p>
+          <textarea
+            value={text}
+            onChange={(e) => setText(e.target.value)}
+            placeholder="Type or paste your text..."
+          />
 
-          <p>
-            I also don’t think they look like us. But I’m sure they exist.
-            I just don’t think we’ll ever see them.
-          </p>
+          <div className="input-actions">
+            <button
+              type="button"
+              className="clear-button"
+              onClick={handleClear}
+            >
+              clear
+            </button>
 
-          <p>
-            A planet needs to be warm enough for life to exist.
-          </p>
-
-          <p>
-            There are billions and billions of planets out there.
-          </p>
+            <button
+              type="button"
+              className="lookup-button"
+              onClick={handleLookup}
+            >
+              lookup
+            </button>
+          </div>
         </div>
 
-        {/* Right */}
+        {/* RESULTS */}
+
         <div className="result-card">
+
+          {/* CONTROLS */}
+
           <div className="result-controls">
-            <button className="control-button">
-              <span className="radio" />
+
+            <button
+              type="button"
+              className="control-button"
+              onClick={() =>
+                setOnlyPhonetics(!onlyPhonetics)
+              }
+            >
+              <span
+                className={`radio ${
+                  onlyPhonetics ? "checked" : ""
+                }`}
+              />
+
               Only phonetics
             </button>
 
-            <button className="control-button">
-              British⌄
+            <button
+              type="button"
+              className="control-button"
+              onClick={() =>
+                setAccent(
+                  accent === "British"
+                    ? "American"
+                    : "British"
+                )
+              }
+            >
+              {accent}⌄
             </button>
+
           </div>
 
+          {/* RESULTS */}
+
           <div className="results">
-            <Result />
-            <Result />
-            <Result />
-            <Result />
-            <Result />
-            <Result />
+
+            {results.length === 0 && (
+              <div className="empty-result">
+                type something to look up
+              </div>
+            )}
+
+            {results.map((result, index) => (
+              <div
+                className="result"
+                key={index}
+              >
+                {!onlyPhonetics && (
+                  <p className="original">
+                    {result.text}
+                  </p>
+                )}
+
+                <p className="phonetics">
+                  {result.phonetics}
+                </p>
+              </div>
+            ))}
+
           </div>
         </div>
       </section>
     </main>
-  );
-}
-
-function Result() {
-  return (
-    <div className="result">
-      <p className="original">
-        There are aliens out there, somewhere. I strongly believe this
-      </p>
-
-      <p className="phonetics">
-        ðər ɑːr ˈeɪliənz aʊt ðeər, ˈsʌmwɛər. aɪ ˈstrɒŋli bɪˈliːv ðɪs
-      </p>
-    </div>
   );
 }
 
