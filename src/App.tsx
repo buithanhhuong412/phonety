@@ -75,9 +75,9 @@ function App() {
 
       <section className="hero">
         <h1>
-          Look up words
+          Look up words in the
           <br />
-          in the <span>International Phonetic Alphabet</span>
+          <span>International Phonetic Alphabet</span>
         </h1>
       </section>
 
