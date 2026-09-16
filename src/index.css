@@ -1,4 +1,7 @@
-```css
+/* =================================
+   RESET
+================================= */
+
 * {
   box-sizing: border-box;
 }
@@ -9,6 +12,7 @@ body,
   width: 100%;
   height: 100%;
   margin: 0;
+  padding: 0;
   overflow: hidden;
 }
 
@@ -22,11 +26,15 @@ button {
   font: inherit;
 }
 
-/* PAGE */
+
+/* =================================
+   PAGE
+================================= */
 
 .phonety {
-  width: 100%;
+  width: 100vw;
   height: 100dvh;
+
   padding: 32px 62px 40px;
 
   display: flex;
@@ -35,7 +43,10 @@ button {
   overflow: hidden;
 }
 
-/* HEADER */
+
+/* =================================
+   HEADER
+================================= */
 
 .header {
   flex-shrink: 0;
@@ -53,30 +64,37 @@ button {
 
 .header-right {
   display: flex;
-  align-items: center;
   gap: 38px;
 }
 
 .header-right button {
   border: 0;
-  background: transparent;
   padding: 0;
+
+  background: transparent;
+
   font-size: 11px;
   color: #222;
+
   cursor: pointer;
 }
 
-/* HERO */
+
+/* =================================
+   HERO
+================================= */
 
 .hero {
   flex-shrink: 0;
 
-  text-align: center;
   margin-top: 76px;
+
+  text-align: center;
 }
 
 .hero h1 {
   margin: 0;
+
   font-size: 32px;
   line-height: 1.2;
   letter-spacing: -1.2px;
@@ -87,41 +105,45 @@ button {
   color: #294b9b;
 }
 
-/* WORKSPACE */
+
+/* =================================
+   WORKSPACE
+================================= */
 
 .workspace {
   flex: 1;
   min-height: 0;
-
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 32px;
 
   width: 100%;
   max-width: 876px;
 
   margin: 66px auto 0;
 
-  align-items: stretch;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 32px;
 
   overflow: hidden;
 }
 
-/* LEFT CARD */
+
+/* =================================
+   INPUT CARD
+================================= */
 
 .input-card {
   min-height: 0;
 
   padding: 34px 31px;
 
+  display: flex;
+  flex-direction: column;
+
+  background: #fff;
   border-radius: 22px;
-  background: white;
 
   font-size: 13px;
   line-height: 1.8;
-
-  display: flex;
-  flex-direction: column;
 }
 
 .input-card textarea {
@@ -130,10 +152,11 @@ button {
   flex: 1;
 
   border: 0;
-  outline: none;
+  outline: 0;
   resize: none;
 
   background: transparent;
+
   color: #202020;
 
   font: inherit;
@@ -144,6 +167,11 @@ button {
   color: #202020;
   opacity: 0.35;
 }
+
+
+/* =================================
+   INPUT ACTIONS
+================================= */
 
 .input-actions {
   flex-shrink: 0;
@@ -157,10 +185,12 @@ button {
 
 .input-actions button {
   border: 0;
-  background: transparent;
   padding: 0;
 
+  background: transparent;
+
   font-size: 10px;
+
   cursor: pointer;
 }
 
@@ -176,33 +206,32 @@ button {
   color: #294b9b;
 }
 
-.input-card p {
-  margin: 0 0 13px;
-}
 
-.input-card p:last-child {
-  margin-bottom: 0;
-}
-
-/* RIGHT CARD */
+/* =================================
+   RESULT CARD
+================================= */
 
 .result-card {
   min-height: 0;
 
-  padding: 72px 31px 34px;
-
-  border-radius: 22px 22px 0 0;
-  background: white;
-
   position: relative;
+
+  padding: 72px 31px 34px;
 
   display: flex;
   flex-direction: column;
 
+  background: #fff;
+
+  border-radius: 22px 22px 0 0;
+
   overflow: hidden;
 }
 
-/* CONTROLS */
+
+/* =================================
+   RESULT CONTROLS
+================================= */
 
 .result-controls {
   position: absolute;
@@ -211,29 +240,37 @@ button {
 
   height: 48px;
 
+  padding: 0 22px;
+
   display: flex;
   align-items: center;
   gap: 22px;
 
-  padding: 0 22px;
+  background: #fff;
 
   border-radius: 22px 22px 0 22px;
-  background: white;
 }
 
 .control-button {
   border: 0;
-  background: transparent;
   padding: 0;
 
   display: flex;
   align-items: center;
   gap: 6px;
 
+  background: transparent;
+
   font-size: 10px;
   color: #111;
+
   cursor: pointer;
 }
+
+
+/* =================================
+   RADIO
+================================= */
 
 .radio {
   width: 10px;
@@ -245,10 +282,13 @@ button {
 
 .radio.checked {
   background: #111;
-  box-shadow: inset 0 0 0 2px white;
+  box-shadow: inset 0 0 0 2px #fff;
 }
 
-/* RESULTS */
+
+/* =================================
+   RESULTS
+================================= */
 
 .results {
   min-height: 0;
@@ -257,8 +297,7 @@ button {
   flex-direction: column;
   gap: 18px;
 
-  overflow-y: auto;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 .result {
@@ -281,20 +320,20 @@ button {
   color: #294b9b;
 }
 
-/* MOBILE */
+.empty-result {
+  font-size: 12px;
+  opacity: 0.35;
+}
+
+
+/* =================================
+   MOBILE
+================================= */
 
 @media (max-width: 800px) {
-  html,
-  body,
-  #root {
-    overflow: hidden;
-  }
 
   .phonety {
-    height: 100dvh;
     padding: 24px;
-
-    overflow: hidden;
   }
 
   .hero {
@@ -306,20 +345,13 @@ button {
   }
 
   .workspace {
-    grid-template-columns: 1fr;
-
     margin-top: 48px;
 
-    overflow-y: auto;
-    overflow-x: hidden;
+    grid-template-columns: 1fr;
   }
 
-  .input-card {
-    min-height: 300px;
-  }
-
+  .input-card,
   .result-card {
-    min-height: 500px;
+    min-height: 0;
   }
 }
-```
