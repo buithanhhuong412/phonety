@@ -92,6 +92,9 @@ function App() {
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Type or paste your text..."
+            spellCheck={false}
+            autoCorrect="off"
+            autoCapitalize="off"
           />
 
           <div className="input-actions">

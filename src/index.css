@@ -57,9 +57,14 @@ button {
 }
 
 .logo {
-  font-size: 30px;
-  font-weight: 700;
-  letter-spacing: -1.5px;
+  display: block;
+  line-height: 0;
+}
+
+.logo img {
+  display: block;
+  height: 30px;
+  width: auto;
 }
 
 .header-right {
