@@ -77,7 +77,7 @@ function App() {
         <h1>
           Look up words
           <br />
-          in the<span>International Phonetic Alphabet</span>
+          in the <span>International Phonetic Alphabet</span>
         </h1>
       </section>
 
