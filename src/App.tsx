@@ -75,9 +75,9 @@ function App() {
 
       <section className="hero">
         <h1>
-          Look up your phonetics from
+          Look up words
           <br />
-          the <span>Cambridge Dictionary</span>
+          in the<span>International Phonetic Alphabet</span>
         </h1>
       </section>
 
