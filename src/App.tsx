@@ -1,4 +1,5 @@
 import { useState } from "react";
+import logo from "./assets/Logo.svg";
 import "./index.css";
 
 type Result = {
@@ -63,7 +64,9 @@ function App() {
       {/* HEADER */}
 
       <header className="header">
-        <div className="logo">/p/</div>
+        <a className="logo" href="/">
+          <img src={logo} alt="Phonety" />
+        </a>
 
         <div className="header-right">
           <button type="button">VN⌄</button>
