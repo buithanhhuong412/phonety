@@ -1,4 +1,3 @@
-```tsx
 import { useState } from "react";
 import "./index.css";
 
@@ -7,40 +6,31 @@ type Result = {
   phonetics: string;
 };
 
-/* ================================
-   DEMO DATA
-================================ */
-
-const DEMO_RESULTS: Result[] = [
+const demoResults: Result[] = [
   {
     text: "There are aliens out there, somewhere.",
-    phonetics: "ðər ɑːr ˈeɪliənz aʊt ðeər, ˈsʌmwɛər.",
+    phonetics:
+      "ðər ɑːr ˈeɪliənz aʊt ðeər, ˈsʌmwɛər.",
   },
   {
     text: "I strongly believe this.",
-    phonetics: "aɪ ˈstrɒŋli bɪˈliːv ðɪs.",
+    phonetics:
+      "aɪ ˈstrɒŋli bɪˈliːv ðɪs.",
   },
 ];
 
-const DEFAULT_TEXT =
-  "There are aliens out there, somewhere. I strongly believe this.";
-
-/* ================================
-   APP
-================================ */
-
 function App() {
-  const [text, setText] = useState(DEFAULT_TEXT);
-  const [results, setResults] = useState<Result[]>(DEMO_RESULTS);
+  const [text, setText] = useState(
+    "There are aliens out there, somewhere. I strongly believe this."
+  );
 
-  const [accent, setAccent] =
-    useState<"British" | "American">("British");
+  const [results, setResults] = useState<Result[]>(demoResults);
+
+  const [accent, setAccent] = useState<"British" | "American">(
+    "British"
+  );
 
   const [onlyPhonetics, setOnlyPhonetics] = useState(false);
-
-  /* ==============================
-     ACTIONS
-  ============================== */
 
   const handleLookup = () => {
     const value = text.trim();
@@ -50,6 +40,8 @@ function App() {
       return;
     }
 
+    // Temporary result.
+    // Later we will replace this with the real IPA data source.
     setResults([
       {
         text: value,
@@ -66,48 +58,28 @@ function App() {
     setResults([]);
   };
 
-  const toggleAccent = () => {
-    setAccent((current) =>
-      current === "British" ? "American" : "British"
-    );
-  };
-
-  /* ==============================
-     UI
-  ============================== */
-
   return (
     <main className="phonety">
-
       {/* HEADER */}
 
       <header className="header">
-        <a className="logo" href="/">
-          <img src="/logo.svg" alt="Phonety" />
-        </a>
+        <div className="logo">/p/</div>
 
-        <nav className="header-right">
-          <button type="button">
-            VN⌄
-          </button>
-
-          <button type="button">
-            Feedback
-          </button>
-        </nav>
+        <div className="header-right">
+          <button type="button">VN⌄</button>
+          <button type="button">Feedback</button>
+        </div>
       </header>
-
 
       {/* HERO */}
 
       <section className="hero">
         <h1>
-          Look up words in the
+          Look up words
           <br />
-          <span>International Phonetic Alphabet</span>
+          in the<span>International Phonetic Alphabet</span>
         </h1>
       </section>
-
 
       {/* WORKSPACE */}
 
@@ -115,18 +87,14 @@ function App() {
 
         {/* INPUT */}
 
-        <section className="input-card">
-
+        <div className="input-card">
           <textarea
             value={text}
-            onChange={(event) =>
-              setText(event.target.value)
-            }
+            onChange={(e) => setText(e.target.value)}
             placeholder="Type or paste your text..."
           />
 
           <div className="input-actions">
-
             <button
               type="button"
               className="clear-button"
@@ -142,15 +110,12 @@ function App() {
             >
               lookup
             </button>
-
           </div>
-
-        </section>
-
+        </div>
 
         {/* RESULTS */}
 
-        <section className="result-card">
+        <div className="result-card">
 
           {/* CONTROLS */}
 
@@ -160,9 +125,7 @@ function App() {
               type="button"
               className="control-button"
               onClick={() =>
-                setOnlyPhonetics(
-                  (current) => !current
-                )
+                setOnlyPhonetics(!onlyPhonetics)
               }
             >
               <span
@@ -174,17 +137,21 @@ function App() {
               Only phonetics
             </button>
 
-
             <button
               type="button"
               className="control-button"
-              onClick={toggleAccent}
+              onClick={() =>
+                setAccent(
+                  accent === "British"
+                    ? "American"
+                    : "British"
+                )
+              }
             >
               {accent}⌄
             </button>
 
           </div>
-
 
           {/* RESULTS */}
 
@@ -196,13 +163,11 @@ function App() {
               </div>
             )}
 
-
             {results.map((result, index) => (
-              <article
+              <div
                 className="result"
                 key={index}
               >
-
                 {!onlyPhonetics && (
                   <p className="original">
                     {result.text}
@@ -212,19 +177,14 @@ function App() {
                 <p className="phonetics">
                   {result.phonetics}
                 </p>
-
-              </article>
+              </div>
             ))}
 
           </div>
-
-        </section>
-
+        </div>
       </section>
-
     </main>
   );
 }
 
 export default App;
-```
