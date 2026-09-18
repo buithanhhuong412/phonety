@@ -1,24 +1,22 @@
-/* =================================
-   RESET
-================================= */
 
 * {
   box-sizing: border-box;
-  font-family: "Lexend Deca", sans-serif;
+  font-family: "Manrope", sans-serif;
+  font-weight: 500;
 }
 
 html,
 body,
 #root {
   width: 100%;
-  height: 100%;
+  min-height: 100%;
   margin: 0;
   padding: 0;
-  overflow: hidden;
+  overflow-x: hidden;
+  overflow-y: auto;
 }
 
 body {
-  font-family: "Lexend Deca", sans-serif;
   background: #f3f3f3;
   color: #202020;
 }
@@ -34,14 +32,10 @@ button {
 
 .phonety {
   width: 100vw;
-  height: 100dvh;
-
+  min-height: 100dvh;
   padding: 32px 62px 40px;
-
   display: flex;
   flex-direction: column;
-
-  overflow: hidden;
 }
 
 
@@ -117,19 +111,12 @@ button {
 ================================= */
 
 .workspace {
-  flex: 1;
-  min-height: 0;
-
-  width: 100%;
-  max-width: 876px;
-
+  width: calc(100% - 240px);
   margin: 66px auto 0;
-
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 32px;
-
-  overflow: hidden;
+  align-items: start;
 }
 
 
@@ -138,33 +125,26 @@ button {
 ================================= */
 
 .input-card {
-  min-height: 0;
-
+  min-height: 360px;
   padding: 34px 31px;
-
   display: flex;
   flex-direction: column;
-
   background: #fff;
   border-radius: 22px;
-
   font-size: 13px;
   line-height: 1.8;
 }
 
 .input-card textarea {
   width: 100%;
-  min-height: 0;
-  flex: 1;
-
+  min-height: 292px;
+  flex: none;
   border: 0;
   outline: 0;
   resize: none;
-
+  overflow: hidden;
   background: transparent;
-
   color: #202020;
-
   font: inherit;
   line-height: 1.8;
 }
@@ -218,20 +198,13 @@ button {
 ================================= */
 
 .result-card {
-  min-height: 0;
-
+  min-height: 360px;
   position: relative;
-
-  padding: 72px 31px 34px;
-
+  padding: 34px 31px;
   display: flex;
   flex-direction: column;
-
   background: #fff;
-
   border-radius: 22px 22px 0 0;
-
-  overflow: hidden;
 }
 
 
@@ -297,24 +270,24 @@ button {
 ================================= */
 
 .results {
-  min-height: 0;
-
   display: flex;
   flex-direction: column;
   gap: 18px;
-
-  overflow: hidden;
 }
 
 .result {
   flex-shrink: 0;
-
+  min-width: 0;
   font-size: 12px;
   line-height: 1.45;
+  overflow-wrap: break-word;
 }
 
 .result p {
   margin: 0;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-break: normal;
 }
 
 .original {
@@ -360,4 +333,46 @@ button {
   .result-card {
     min-height: 0;
   }
+}
+/* ALIGNED RESULTS */
+
+.aligned-result {
+  position: relative;
+  width: 100%;
+}
+
+.aligned-measure {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  visibility: hidden;
+  pointer-events: none;
+  white-space: pre-wrap;
+  overflow-wrap: normal;
+}
+
+.aligned-measure span {
+  white-space: pre-wrap;
+}
+
+.aligned-lines {
+  width: 100%;
+}
+
+.aligned-line {
+  width: 100%;
+}
+
+.aligned-line p {
+  margin: 0;
+  white-space: nowrap;
+}
+
+.aligned-line + .aligned-line {
+  margin-top: 0;
+}
+
+.aligned-line .phonetics {
+  margin-top: 3px;
 }
