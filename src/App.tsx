@@ -219,7 +219,7 @@ function AlignedResult({
 function App() {
   const [text, setText] =
     useState(
-      "There are aliens out there, somewhere. I strongly believe this."
+      ""
     );
 
   const [results, setResults] =
@@ -229,6 +229,12 @@ function App() {
     useRef<HTMLTextAreaElement>(
       null
     );
+
+  useLayoutEffect(() => {
+    if (textareaRef.current) {
+      textareaRef.current.focus();
+    }
+  }, []);
 
   const resizeTextarea = (
     element: HTMLTextAreaElement
@@ -282,6 +288,24 @@ function App() {
     );
   };
 
+  const handleCopy = async () => {
+  if (!results.length) {
+    return;
+  }
+
+  const phonetics = results
+    .map((result) => result.phonetics)
+    .join("\n");
+
+  try {
+    await navigator.clipboard.writeText(
+      phonetics
+    );
+  } catch {
+    // Ignore clipboard errors.
+  }
+};
+
   return (
     <main className="phonety">
       <header className="header">
@@ -296,10 +320,6 @@ function App() {
         </a>
 
         <div className="header-right">
-          <button type="button">
-            VN⌄
-          </button>
-
           <button type="button">
             Feedback
           </button>
@@ -340,7 +360,7 @@ function App() {
           <div className="results">
             {results.length === 0 && (
               <div className="empty-result">
-                type something to look up
+                Transcription
               </div>
             )}
 

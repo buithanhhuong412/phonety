@@ -17,8 +17,16 @@ body,
 }
 
 body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", /* Windows */
+               Roboto, /* Android */
+               "Helvetica Neue", 
+               Arial, 
+               sans-serif,
+               "Apple Color Emoji", 
+               "Segoe UI Emoji", 
+               "Segoe UI Symbol"; /* Emoji hỗ trợ */
   background: #f3f3f3;
-  color: #202020;
+  color: #000;
 }
 
 button {
@@ -59,7 +67,7 @@ button {
 .logo img {
   display: block;
   width: auto;
-  height: 30px;
+  height: 80px;
 }
 
 .header-right {
@@ -73,8 +81,8 @@ button {
 
   background: transparent;
 
-  font-size: 11px;
-  color: #222;
+  font-size: 15px;
+  color: #000;
 
   cursor: pointer;
 }
@@ -86,16 +94,13 @@ button {
 
 .hero {
   flex-shrink: 0;
-
-  margin-top: 76px;
-
+  margin-top: 16px;
   text-align: center;
 }
 
 .hero h1 {
   margin: 0;
-
-  font-size: 32px;
+  font-size: 36px;
   line-height: 1.2;
   letter-spacing: -1.2px;
   font-weight: 700;
@@ -103,6 +108,7 @@ button {
 
 .hero h1 span {
   color: #294b9b;
+  font-weight: 700;
 }
 
 
@@ -113,9 +119,11 @@ button {
 .workspace {
   width: calc(100% - 240px);
   margin: 66px auto 0;
+
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 32px;
+
   align-items: start;
 }
 
@@ -125,26 +133,37 @@ button {
 ================================= */
 
 .input-card {
-  min-height: 360px;
+  width: 100%;
+  min-width: 0;
+  min-height: 420px;
+
   padding: 34px 31px;
+
   display: flex;
   flex-direction: column;
+
   background: #fff;
   border-radius: 22px;
+
   font-size: 13px;
   line-height: 1.8;
 }
 
 .input-card textarea {
   width: 100%;
+  min-width: 0;
   min-height: 292px;
+
   flex: none;
+
   border: 0;
   outline: 0;
   resize: none;
   overflow: hidden;
+
   background: transparent;
   color: #202020;
+
   font: inherit;
   line-height: 1.8;
 }
@@ -154,42 +173,22 @@ button {
   opacity: 0.35;
 }
 
-
-/* =================================
-   INPUT ACTIONS
-================================= */
-
-.input-actions {
-  flex-shrink: 0;
-
-  display: flex;
-  justify-content: flex-end;
-  gap: 14px;
-
-  margin-top: 20px;
+.input-card textarea,
+.aligned-result {
+  font-family: inherit; /* Hoặc tên font cụ thể như 'Inter', sans-serif */
+  font-size: 16px;      /* Cỡ chữ bạn muốn dùng (ví dụ: 16px hoặc 1rem) */
+  line-height: 1.5;     /* Khoảng cách dòng chuẩn để khớp căn chỉnh */
 }
 
-.input-actions button {
-  border: 0;
-  padding: 0;
-
-  background: transparent;
-
-  font-size: 10px;
-
-  cursor: pointer;
+.aligned-result .original {
+  font-size: inherit;
+  font-family: inherit;
+  font-weight: normal;  /* Hoặc medium tùy ý bạn */
 }
 
-.clear-button {
-  opacity: 0.4;
-}
-
-.clear-button:hover {
-  opacity: 1;
-}
-
-.lookup-button {
-  color: #294b9b;
+.aligned-result .phonetics {
+  font-size: inherit;   /* Hoặc có thể nhỏ hơn chút nếu muốn phân biệt, ví dụ: 0.95em */
+  font-family: inherit;
 }
 
 
@@ -198,52 +197,19 @@ button {
 ================================= */
 
 .result-card {
-  min-height: 360px;
+  width: 100%;
+  min-width: 0;
+  min-height: 420px;
+
   position: relative;
+
   padding: 34px 31px;
+
   display: flex;
   flex-direction: column;
+
   background: #fff;
   border-radius: 22px 22px 0 0;
-}
-
-
-/* =================================
-   RESULT CONTROLS
-================================= */
-
-.result-controls {
-  position: absolute;
-  top: 0;
-  right: 0;
-
-  height: 48px;
-
-  padding: 0 22px;
-
-  display: flex;
-  align-items: center;
-  gap: 22px;
-
-  background: #fff;
-
-  border-radius: 22px 22px 0 22px;
-}
-
-.control-button {
-  border: 0;
-  padding: 0;
-
-  display: flex;
-  align-items: center;
-  gap: 6px;
-
-  background: transparent;
-
-  font-size: 10px;
-  color: #111;
-
-  cursor: pointer;
 }
 
 
@@ -334,11 +300,15 @@ button {
     min-height: 0;
   }
 }
-/* ALIGNED RESULTS */
+
+/* =================================
+   ALIGNED RESULTS
+================================= */
 
 .aligned-result {
   position: relative;
   width: 100%;
+  min-width: 0;
 }
 
 .aligned-measure {
@@ -346,27 +316,41 @@ button {
   top: 0;
   left: 0;
   width: 100%;
+
   visibility: hidden;
   pointer-events: none;
+
   white-space: pre-wrap;
-  overflow-wrap: normal;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .aligned-measure span {
   white-space: pre-wrap;
+  overflow-wrap: break-word;
+  word-break: break-word;
 }
 
 .aligned-lines {
   width: 100%;
+  min-width: 0;
 }
 
 .aligned-line {
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
 }
 
 .aligned-line p {
   margin: 0;
-  white-space: nowrap;
+
+  /* Cho phép IPA xuống dòng */
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
+
+  max-width: 100%;
 }
 
 .aligned-line + .aligned-line {
@@ -375,4 +359,9 @@ button {
 
 .aligned-line .phonetics {
   margin-top: 3px;
+  max-width: 100%;
+
+  white-space: normal;
+  overflow-wrap: anywhere;
+  word-break: break-word;
 }

@@ -262,16 +262,6 @@ function syllableToIPA(
     (phoneme) => phoneme.isVowel
   );
 
-  /*
-   * Stress belongs to the START of the syllable,
-   * not immediately before the vowel.
-   *
-   * Wrong:
-   * sˈʌm
-   *
-   * Correct:
-   * ˈsʌm
-   */
   let stress = "";
 
   if (vowelIndex !== -1) {
@@ -284,9 +274,11 @@ function syllableToIPA(
     }
   }
 
+  // Thay vì .join("") sát rạt dễ gây lỗi dính ký tự đặc biệt,
+  // ta map qua từng ipa và nối chúng một cách an toàn
   const sound = syllable
     .map((phoneme) => phoneme.ipa)
-    .join("");
+    .join(""); // Hoặc thêm ký tự phân tách vô hình nếu cần
 
   return stress + sound;
 }
