@@ -323,12 +323,13 @@ select {
   margin-top: 0;
 }
 
-.aligned-line .phonetics {
-  margin-top: 3px;
-  max-width: 100%;
-  white-space: normal;
-  overflow-wrap: anywhere;
+.aligned-line .phonetics { 
+  margin-top: 3px; 
+  max-width: 100%; 
+  white-space: normal; 
+  overflow-wrap: anywhere; 
   word-break: break-word;
+  word-spacing: 0.45em;
 }
 
 /* =========================
