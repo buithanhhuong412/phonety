@@ -555,3 +555,10 @@ select {
     min-height: 160px;
   }
 }
+
+.controls .control,
+.controls select {
+  background: #fff;
+  border-radius: 24px;
+  padding: 8px 14px;
+}
