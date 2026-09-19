@@ -1,9 +1,17 @@
+:root {
+  --color-primary: #22368F;
+  --color-background: #ffffff;
+  --color-surface: #ffffff;
+  --color-text: #000000;
+
+  --font-primary: "Manrope", sans-serif;
+}
 
 * {
   box-sizing: border-box;
-  font-family: "Manrope", sans-serif;
+  font-family: var(--font-primary);
   font-weight: 500;
-  color: #000;
+  color: var(--color-text);
 }
 
 html,
@@ -69,6 +77,7 @@ button {
   display: block;
   width: auto;
   height: 80px;
+  color: var(--color-text)
 }
 
 .header-right {
@@ -95,7 +104,7 @@ button {
 
 .hero {
   flex-shrink: 0;
-  margin-top: 16px;
+  margin-top: 8px;
   text-align: center;
 }
 
@@ -138,7 +147,7 @@ button {
   min-width: 0;
   min-height: 420px;
 
-  padding: 34px 31px;
+  padding: 32px 32px;
 
   display: flex;
   flex-direction: column;
@@ -146,14 +155,14 @@ button {
   background: #fff;
   border-radius: 24px;
 
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.8;
 }
 
 .input-card textarea {
   width: 100%;
   min-width: 0;
-  min-height: 292px;
+  min-height: 360px;
 
   flex: none;
 
@@ -163,14 +172,14 @@ button {
   overflow: hidden;
 
   background: transparent;
-  color: #202020;
+  color: #000;
 
   font: inherit;
   line-height: 1.8;
 }
 
 .input-card textarea::placeholder {
-  color: #202020;
+  color: #000;
   opacity: 0.35;
 }
 
@@ -204,7 +213,7 @@ button {
 
   position: relative;
 
-  padding: 34px 31px;
+  padding: 32px 32px;
 
   display: flex;
   flex-direction: column;
@@ -222,12 +231,12 @@ button {
   width: 10px;
   height: 10px;
 
-  border: 1px solid #111;
+  border: 1px solid #000;
   border-radius: 50%;
 }
 
 .radio.checked {
-  background: #111;
+  background: #000;
   box-shadow: inset 0 0 0 2px #fff;
 }
 
@@ -239,14 +248,14 @@ button {
 .results {
   display: flex;
   flex-direction: column;
-  gap: 18px;
+  gap: 32px;
 }
 
 .result {
   flex-shrink: 0;
   min-width: 0;
-  font-size: 12px;
-  line-height: 1.45;
+  font-size: 15px;
+  line-height: 1.8;
   overflow-wrap: break-word;
 }
 
@@ -258,16 +267,16 @@ button {
 }
 
 .original {
-  color: #111;
+  color: #000;
 }
 
 .phonetics {
-  margin-top: 3px !important;
+  margin-top: 0px !important;
   color: #294b9b;
 }
 
 .empty-result {
-  font-size: 12px;
+  font-size: 16px;
   opacity: 0.35;
 }
 
@@ -355,11 +364,11 @@ button {
 }
 
 .aligned-line + .aligned-line {
-  margin-top: 0;
+  margin-top: 8px;
 }
 
 .aligned-line .phonetics {
-  margin-top: 3px;
+  margin-top: 0px;
   max-width: 100%;
 
   white-space: normal;
@@ -388,12 +397,12 @@ button {
 .feedback-popup {
   position: relative;
 
-  width: min(520px, 100%);
+  width: min(660px, 100%);
 
   padding: 32px;
 
   background: #fff;
-  border-radius: 22px;
+  border-radius: 24px;
 
   box-shadow: 0 20px 60px rgba(0, 0, 0, 0.12);
 }
@@ -408,10 +417,10 @@ button {
 
 .feedback-close {
   position: absolute;
-  top: 18px;
-  right: 20px;
+  top: 16px;
+  right: 12px;
 
-  width: 32px;
+  width: 48px;
   height: 32px;
 
   border: 0;
@@ -419,11 +428,11 @@ button {
 
   background: transparent;
 
-  font-size: 28px;
+  font-size: 36px;
   line-height: 1;
   font-weight: 400;
 
-  color: #555;
+  color: #908c8c;
 
   cursor: pointer;
 }
@@ -436,14 +445,14 @@ button {
 
   padding: 16px;
 
-  border: 1px solid #ddd;
-  border-radius: 14px;
+  border: 1px solid #fff;
+  border-radius: 18px;
 
   outline: none;
   resize: vertical;
 
   background: #f8f8f8;
-  color: #202020;
+  color: #000;
 
   font: inherit;
   font-size: 15px;
@@ -476,8 +485,8 @@ button {
 }
 
 .feedback-cancel {
-  background: #eee;
-  color: #222;
+  background: #fff;
+  color: #000;
 }
 
 .feedback-send {
@@ -527,4 +536,48 @@ button {
 
   font-size: 14px;
   line-height: 1.5;
+}
+
+/* =================================
+   FOOTER
+================================= */
+
+.footer {
+  width: 100%;
+  margin-top: auto;
+  padding-top: 40px;
+
+  text-align: center;
+}
+
+.footer p {
+  width: 100%;
+  margin: 0;
+  text-align: center;
+  font-family: var(--font-primary);
+  font-size: 11px;
+  line-height: 1.5;
+  font-weight: 500;
+  color: var(--color-text);
+  opacity: 0.45;
+}
+
+.footer a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.footer a:hover {
+  opacity: 0.7;
+}
+
+::selection {
+  background: #000;
+  color: #fff;
+}
+
+::-moz-selection {
+  background: #000;
+  color: #fff;
 }

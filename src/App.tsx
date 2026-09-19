@@ -441,6 +441,30 @@ function App() {
         </div>
       </section>
 
+      <footer className="footer">
+        <p>
+          Pronunciation data adapted from the{" "}
+          <a
+            href="https://github.com/cmusphinx/cmudict"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Carnegie Mellon Pronouncing Dictionary (CMUdict)
+          </a>
+          , maintained by Carnegie Mellon University.
+          {" "}
+          Website designed and built by{" "}
+          <a
+            href="https://buithanhuong.com"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Thanh Huong Bui
+          </a>
+          .
+        </p>
+      </footer>
+
       {feedbackOpen && (
         <div
           className="feedback-overlay"
