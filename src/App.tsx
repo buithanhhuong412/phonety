@@ -225,6 +225,21 @@ function App() {
   const [results, setResults] =
     useState<Result[]>([]);
 
+  const [feedbackOpen, setFeedbackOpen] =
+    useState(false);
+
+  const [feedback, setFeedback] =
+    useState("");
+
+  const [feedbackSending, setFeedbackSending] =
+    useState(false);
+
+  const [feedbackSent, setFeedbackSent] =
+    useState(false);
+
+  const [feedbackError, setFeedbackError] =
+    useState("");
+
   const textareaRef =
     useRef<HTMLTextAreaElement>(
       null
@@ -288,6 +303,47 @@ function App() {
     );
   };
 
+  const handleFeedbackSubmit = async () => {
+    const message = feedback.trim();
+
+    if (!message || feedbackSending) {
+      return;
+    }
+
+    setFeedbackSending(true);
+    setFeedbackError("");
+
+    try {
+      const response = await fetch(
+        "https://formspree.io/f/myezzawg",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Accept: "application/json",
+          },
+          body: JSON.stringify({
+            message,
+            _subject: "Phonety Feedback",
+          }),
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to send feedback.");
+      }
+
+      setFeedback("");
+      setFeedbackSent(true);
+    } catch {
+      setFeedbackError(
+        "Something went wrong. Please try again."
+      );
+    } finally {
+      setFeedbackSending(false);
+    }
+  };
+
   const handleCopy = async () => {
   if (!results.length) {
     return;
@@ -320,7 +376,14 @@ function App() {
         </a>
 
         <div className="header-right">
-          <button type="button">
+          <button
+            type="button"
+            onClick={() => {
+              setFeedbackOpen(true);
+              setFeedbackSent(false);
+              setFeedbackError("");
+            }}
+          >
             Feedback
           </button>
         </div>
@@ -378,9 +441,84 @@ function App() {
             )}
           </div>
         </div>
-      </section>
-    </main>
-  );
+            </section>
+            {feedbackOpen && (
+              <div
+                className="feedback-overlay"
+                onMouseDown={(e) => {
+                  if (e.target === e.currentTarget) {
+                    setFeedbackOpen(false);
+                  }
+                }}
+              >
+                <div
+                  className="feedback-popup"
+                  role="dialog"
+                  aria-modal="true"
+                  aria-labelledby="feedback-title"
+                >
+                  <button
+                    className="feedback-close"
+                    type="button"
+                    aria-label="Close feedback"
+                    onClick={() => setFeedbackOpen(false)}
+                  >
+                    ×
+                  </button>
+
+                  <h2 id="feedback-title">
+                    Feedback
+                  </h2>
+
+                  <textarea
+                    className="feedback-textarea"
+                    value={feedback}
+                    onChange={(e) =>
+                      setFeedback(e.target.value)
+                    }
+                    placeholder="Tell us what you think..."
+                    autoFocus
+                  />
+
+                  <div className="feedback-actions">
+                    <button
+                      className="feedback-cancel"
+                      type="button"
+                      onClick={() => {
+                        setFeedback("");
+                        setFeedbackOpen(false);
+                      }}
+                    >
+                      Cancel
+                    </button>
+
+                    <button
+                      className="feedback-send"
+                      type="button"
+                      onClick={() => {
+                        const subject =
+                          encodeURIComponent("Phonety Feedback");
+
+                        const body =
+                          encodeURIComponent(feedback);
+
+                        window.location.href =
+                          `mailto:buithanhhuong682@gmail.com?subject=${subject}&body=${body}`;
+
+                        setFeedback("");
+                        setFeedbackOpen(false);
+                      }}
+                      disabled={!feedback.trim()}
+                    >
+                      Send
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+          </main>
+        );
 }
 
 export default App;
