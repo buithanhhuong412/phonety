@@ -1,10 +1,12 @@
 import {
+  useEffect,
   useLayoutEffect,
   useRef,
   useState,
 } from "react";
 
 import logo from "./assets/Logo.svg";
+
 import "./index.css";
 
 import {
@@ -55,6 +57,97 @@ function getTokenKey(
   return `${accent}:${normalizeLookupWord(word)}`;
 }
 
+/*
+ * Favicon
+ *
+ * Uses Logo.svg as the source.
+ * Light mode  -> black
+ * Dark mode   -> white
+ *
+ * The SVG is rendered to a canvas so the
+ * favicon color can be changed reliably.
+ */
+function updateFavicon() {
+  const favicon =
+    document.querySelector<HTMLLinkElement>(
+      'link[rel="icon"]'
+    );
+
+  if (!favicon) {
+    return;
+  }
+
+  const mediaQuery =
+    window.matchMedia(
+      "(prefers-color-scheme: dark)"
+    );
+
+  const isDark =
+    mediaQuery.matches;
+
+  const image =
+    new Image();
+
+  image.onload = () => {
+    const canvas =
+      document.createElement("canvas");
+
+    const size = 64;
+
+    canvas.width = size;
+    canvas.height = size;
+
+    const context =
+      canvas.getContext("2d");
+
+    if (!context) {
+      return;
+    }
+
+    context.clearRect(
+      0,
+      0,
+      size,
+      size
+    );
+
+    /*
+     * Logo.svg is assumed to be a dark/black logo.
+     * In dark mode we invert it to white.
+     */
+    if (isDark) {
+      context.filter =
+        "brightness(0) invert(1)";
+    } else {
+      context.filter =
+        "brightness(0)";
+    }
+
+    context.drawImage(
+      image,
+      0,
+      0,
+      size,
+      size
+    );
+
+    favicon.href =
+      canvas.toDataURL(
+        "image/png"
+      );
+  };
+
+  image.onerror = () => {
+    /*
+     * Fallback to the original SVG
+     * if the browser cannot load it.
+     */
+    favicon.href = logo;
+  };
+
+  image.src = logo;
+}
+
 function AlignedResult({
   result,
   onlyPhonetics,
@@ -79,16 +172,11 @@ function AlignedResult({
     useState<PhoneticToken[][]>([]);
 
   /*
-   * IMPORTANT:
-   *
    * American:
-   *   CMUdict creates the tokens.
+   * CMUdict creates the tokens.
    *
    * British:
-   *   Britfone creates the tokens.
-   *
-   * There is no cross-use between
-   * the two dictionaries.
+   * Britfone creates the tokens.
    */
   const tokens: PhoneticToken[] =
     accent === "American"
@@ -96,8 +184,9 @@ function AlignedResult({
       : lookupBritishTokens(result.text);
 
   /*
-   * Apply AI fallback to tokens that
-   * were not found in the local dictionary.
+   * Apply AI fallback to tokens
+   * that are missing from the
+   * local dictionary.
    */
   const displayTokens =
     tokens.map(token => {
@@ -297,8 +386,7 @@ function AlignedResult({
                     token =>
                       token.phonetics
                   )
-                  .join("")
-                }
+                  .join("")}
               </p>
             </div>
           )
@@ -315,11 +403,17 @@ function App() {
   const [results, setResults] =
     useState<Result[]>([]);
 
+  /*
+   * Only Phonetics toggle.
+   */
   const [onlyPhonetics, setOnlyPhonetics] =
     useState(false);
 
+  /*
+   * British is the default accent.
+   */
   const [accent, setAccent] =
-    useState<Accent>("American");
+    useState<Accent>("British");
 
   const [aiFallbacks, setAiFallbacks] =
     useState<Record<string, string>>(
@@ -327,6 +421,9 @@ function App() {
     );
 
   const [aiLoading, setAiLoading] =
+    useState(false);
+
+  const [isSpeaking, setIsSpeaking] =
     useState(false);
 
   const [feedbackOpen, setFeedbackOpen] =
@@ -347,15 +444,52 @@ function App() {
   const textareaRef =
     useRef<HTMLTextAreaElement>(null);
 
-  /*
-   * Used to prevent an older AI request
-   * from overwriting a newer lookup.
-   */
   const requestIdRef =
     useRef(0);
 
+  /*
+   * Focus textarea when app loads.
+   */
   useLayoutEffect(() => {
     textareaRef.current?.focus();
+  }, []);
+
+  /*
+   * Setup favicon and automatically
+   * update it when the system theme changes.
+   */
+  useEffect(() => {
+    updateFavicon();
+
+    const mediaQuery =
+      window.matchMedia(
+        "(prefers-color-scheme: dark)"
+      );
+
+    const handleThemeChange = () => {
+      updateFavicon();
+    };
+
+    mediaQuery.addEventListener(
+      "change",
+      handleThemeChange
+    );
+
+    return () => {
+      mediaQuery.removeEventListener(
+        "change",
+        handleThemeChange
+      );
+    };
+  }, []);
+
+  /*
+   * Stop speech when component unmounts.
+   */
+  useEffect(() => {
+    return () => {
+      window.speechSynthesis.cancel();
+    };
   }, []);
 
   const resizeTextarea = (
@@ -402,11 +536,6 @@ function App() {
       sentence => ({
         text: sentence,
 
-        /*
-         * The actual phonetics are
-         * generated inside AlignedResult
-         * from the correct dictionary.
-         */
         phonetics:
           selectedAccent === "American"
             ? lookupText(sentence)
@@ -415,17 +544,12 @@ function App() {
     );
   };
 
-  /*
-   * Find all words that are missing
-   * from the selected local dictionary.
-   *
-   * We send unique words only.
-   */
   const findMissingWords = (
     value: string,
     selectedAccent: Accent
   ): string[] => {
-    const missing = new Set<string>();
+    const missing =
+      new Set<string>();
 
     const sentences =
       splitSentences(value);
@@ -471,14 +595,6 @@ function App() {
     return Array.from(missing);
   };
 
-  /*
-   * Ask our Vercel API route for
-   * words that local dictionaries
-   * cannot find.
-   *
-   * The browser NEVER receives the
-   * OpenAI API key.
-   */
   const fetchAIFallbacks = async (
     value: string,
     selectedAccent: Accent
@@ -490,7 +606,8 @@ function App() {
       );
 
     if (
-      missingWords.length === 0
+      missingWords.length ===
+      0
     ) {
       return;
     }
@@ -628,6 +745,16 @@ function App() {
   const handleAccentChange = (
     nextAccent: Accent
   ) => {
+    if (nextAccent === accent) {
+      return;
+    }
+
+    /*
+     * Stop any speech when changing accent.
+     */
+    window.speechSynthesis.cancel();
+    setIsSpeaking(false);
+
     setAccent(nextAccent);
 
     setResults(
@@ -640,6 +767,118 @@ function App() {
     void fetchAIFallbacks(
       text,
       nextAccent
+    );
+  };
+
+  const getOutputText = () => {
+    return results
+      .map(result => {
+        const tokens =
+          accent === "American"
+            ? lookupTokens(
+                result.text
+              )
+            : lookupBritishTokens(
+                result.text
+              );
+
+        return tokens
+          .map(token => {
+            if (
+              "isWord" in token &&
+              token.isWord &&
+              !token.phonetics
+            ) {
+              const fallback =
+                aiFallbacks[
+                  getTokenKey(
+                    accent,
+                    token.text
+                  )
+                ];
+
+              return (
+                fallback ||
+                token.text
+              );
+            }
+
+            return token.phonetics;
+          })
+          .join("");
+      })
+      .join("\n");
+  };
+
+  const handleCopy = async () => {
+    const output =
+      getOutputText();
+
+    if (!output) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(
+        output
+      );
+    } catch (error) {
+      console.error(
+        "Failed to copy:",
+        error
+      );
+    }
+  };
+
+  /*
+   * Volume button:
+   *
+   * First click  -> start speaking
+   * Second click -> stop speaking
+   */
+  const handleVolume = () => {
+    if (!results.length) {
+      return;
+    }
+
+    if (
+      window.speechSynthesis.speaking
+    ) {
+      window.speechSynthesis.cancel();
+      setIsSpeaking(false);
+      return;
+    }
+
+    const textToSpeak =
+      results
+        .map(
+          result =>
+            result.text
+        )
+        .join(" ");
+
+    const utterance =
+      new SpeechSynthesisUtterance(
+        textToSpeak
+      );
+
+    utterance.lang =
+      accent === "American"
+        ? "en-US"
+        : "en-GB";
+
+    utterance.onend = () => {
+      setIsSpeaking(false);
+    };
+
+    utterance.onerror = () => {
+      setIsSpeaking(false);
+    };
+
+    setIsSpeaking(true);
+
+    window.speechSynthesis.speak(
+      utterance
     );
   };
 
@@ -762,63 +1001,365 @@ function App() {
         </div>
 
         <div className="output-column">
-          <div className="output-controls">
-            <label className="phonetics-toggle">
+          <div
+            className="output-controls"
+            style={{
+              display: "flex",
+              alignItems: "center",
+              gap: "8px",
+              marginBottom: "0px",
+            }}
+          >
+            {/* ONLY PHONETICS */}
+            <label
+              className="phonetics-toggle"
+              style={{
+                background:
+                  "#ffffff",
+                borderRadius:
+                  "24px",
+                height: "40px",
+                boxSizing:
+                  "border-box",
+                display:
+                  "flex",
+                alignItems:
+                  "center",
+                gap: "8px",
+                padding:
+                  "0 14px",
+                cursor:
+                  "pointer",
+              }}
+            >
               <input
                 type="checkbox"
-                checked={onlyPhonetics}
+                checked={
+                  onlyPhonetics
+                }
                 onChange={e =>
                   setOnlyPhonetics(
                     e.target.checked
                   )
                 }
+                aria-label="Only Phonetics"
+                style={{
+                  width:
+                    "18px",
+                  height:
+                    "18px",
+                  margin: 0,
+                  cursor:
+                    "pointer",
+                  flexShrink:
+                    0,
+                }}
               />
 
               <span>
-                Only phonetics
+                Only Phonetics
               </span>
             </label>
 
-            <select
-              className="accent-select"
-              value={accent}
-              onChange={e =>
-                handleAccentChange(
-                  e.target.value as Accent
-                )
-              }
+            {/* AMERICAN / BRITISH */}
+            <div
+              className="accent-toggle"
+              role="group"
               aria-label="Accent"
+              style={{
+                height: "40px",
+                boxSizing:
+                  "border-box",
+                display:
+                  "flex",
+                alignItems:
+                  "center",
+                background:
+                  "#ffffff",
+                borderRadius:
+                  "24px",
+                padding:
+                  "4px",
+                gap: "2px",
+              }}
             >
-              <option value="American">
+              <button
+                type="button"
+                onClick={() =>
+                  handleAccentChange(
+                    "American"
+                  )
+                }
+                aria-pressed={
+                  accent ===
+                  "American"
+                }
+                style={{
+                  border:
+                    "none",
+                  borderRadius:
+                    "20px",
+                  padding:
+                    "7px 14px",
+                  background:
+                    accent ===
+                    "American"
+                      ? "#111111"
+                      : "transparent",
+                  color:
+                    accent ===
+                    "American"
+                      ? "#ffffff"
+                      : "#111111",
+                  cursor:
+                    "pointer",
+                  fontSize:
+                    "13px",
+                  fontWeight:
+                    500,
+                  transition:
+                    "all 0.2s ease",
+                }}
+              >
                 American
-              </option>
+              </button>
 
-              <option value="British">
+              <button
+                type="button"
+                onClick={() =>
+                  handleAccentChange(
+                    "British"
+                  )
+                }
+                aria-pressed={
+                  accent ===
+                  "British"
+                }
+                style={{
+                  border:
+                    "none",
+                  borderRadius:
+                    "20px",
+                  padding:
+                    "7px 14px",
+                  background:
+                    accent ===
+                    "British"
+                      ? "#111111"
+                      : "transparent",
+                  color:
+                    accent ===
+                    "British"
+                      ? "#ffffff"
+                      : "#111111",
+                  cursor:
+                    "pointer",
+                  fontSize:
+                    "13px",
+                  fontWeight:
+                    500,
+                  transition:
+                    "all 0.2s ease",
+                }}
+              >
                 British
-              </option>
-            </select>
+              </button>
+            </div>
           </div>
 
-          <div className="result-card">
+          <div
+            className="result-card"
+            style={{
+              position:
+                "relative",
+            }}
+          >
+            {/*
+             * Output actions are only visible
+             * when there is transcription.
+             */}
+            {results.length > 0 && (
+              <div
+                className="output-actions"
+                style={{
+                  position:
+                    "absolute",
+                  top: "16px",
+                  right: "16px",
+                  display:
+                    "flex",
+                  alignItems:
+                    "center",
+                  gap: "8px",
+                  zIndex: 2,
+                }}
+              >
+                {/* VOLUME BUTTON */}
+                <button
+                  type="button"
+                  aria-label={
+                    isSpeaking
+                      ? "Stop pronunciation"
+                      : "Play pronunciation"
+                  }
+                  onClick={
+                    handleVolume
+                  }
+                  style={{
+                    width:
+                      "32px",
+                    height:
+                      "32px",
+                    padding:
+                      "4px",
+                    border:
+                      "none",
+                    background:
+                      "transparent",
+                    display:
+                      "flex",
+                    alignItems:
+                      "center",
+                    justifyContent:
+                      "center",
+                    cursor:
+                      "pointer",
+                  }}
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    {isSpeaking ? (
+                      <>
+                        <path
+                          d="M6 6L18 18"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        />
+
+                        <path
+                          d="M18 6L6 18"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        />
+                      </>
+                    ) : (
+                      <>
+                        <path
+                          d="M4 9V15H8L13 19V5L8 9H4Z"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinejoin="round"
+                        />
+
+                        <path
+                          d="M16 9.5C17.3333 10.8333 17.3333 13.1667 16 14.5"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        />
+
+                        <path
+                          d="M18.5 7C21.1667 9.66667 21.1667 14.3333 18.5 17"
+                          stroke="currentColor"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                        />
+                      </>
+                    )}
+                  </svg>
+                </button>
+
+                {/* COPY BUTTON */}
+                <button
+                  type="button"
+                  aria-label="Copy phonetics"
+                  onClick={
+                    handleCopy
+                  }
+                  style={{
+                    width:
+                      "32px",
+                    height:
+                      "32px",
+                    padding:
+                      "4px",
+                    border:
+                      "none",
+                    background:
+                      "transparent",
+                    display:
+                      "flex",
+                    alignItems:
+                      "center",
+                    justifyContent:
+                      "center",
+                    cursor:
+                      "pointer",
+                  }}
+                >
+                  <svg
+                    width="24"
+                    height="24"
+                    viewBox="0 0 24 24"
+                    fill="none"
+                    xmlns="http://www.w3.org/2000/svg"
+                    aria-hidden="true"
+                  >
+                    <rect
+                      x="8"
+                      y="8"
+                      width="11"
+                      height="11"
+                      rx="2"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    />
+
+                    <path
+                      d="M16 8V6C16 4.89543 15.1046 4 14 4H6C4.89543 4 4 4.89543 4 6V14C4 15.1046 5 16 6 16H8"
+                      stroke="currentColor"
+                      strokeWidth="1.5"
+                    />
+                  </svg>
+                </button>
+              </div>
+            )}
+
             <div className="results">
-              {results.length === 0 && (
+              {results.length ===
+                0 && (
                 <div className="empty-result">
                   Transcription
                 </div>
               )}
 
               {results.map(
-                (result, index) => (
+                (
+                  result,
+                  index
+                ) => (
                   <div
                     className="result"
                     key={`${accent}-${index}`}
                   >
                     <AlignedResult
-                      result={result}
+                      result={
+                        result
+                      }
                       onlyPhonetics={
                         onlyPhonetics
                       }
-                      accent={accent}
+                      accent={
+                        accent
+                      }
                       aiFallbacks={
                         aiFallbacks
                       }
@@ -832,10 +1373,14 @@ function App() {
           {aiLoading && (
             <div
               style={{
-                marginTop: "8px",
-                fontSize: "12px",
-                opacity: 0.45,
-                textAlign: "right",
+                marginTop:
+                  "8px",
+                fontSize:
+                  "12px",
+                opacity:
+                  0.45,
+                textAlign:
+                  "right",
               }}
             >
               Looking up pronunciation...
@@ -902,7 +1447,9 @@ function App() {
               className="feedback-close"
               type="button"
               aria-label="Close feedback"
-              onClick={closeFeedback}
+              onClick={
+                closeFeedback
+              }
             >
               ×
             </button>
@@ -936,7 +1483,9 @@ function App() {
 
                 <textarea
                   className="feedback-textarea"
-                  value={feedback}
+                  value={
+                    feedback
+                  }
                   onChange={e =>
                     setFeedback(
                       e.target.value
@@ -948,7 +1497,9 @@ function App() {
 
                 {feedbackError && (
                   <p className="feedback-error">
-                    {feedbackError}
+                    {
+                      feedbackError
+                    }
                   </p>
                 )}
 
