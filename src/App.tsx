@@ -13,17 +13,53 @@ import {
   type LookupToken,
 } from "./phonetics/cmudict";
 
+import {
+  lookupBritishTokens,
+  type BritishToken,
+} from "./phonetics/britfone";
+
+type Accent =
+  | "British"
+  | "American";
+
 type Result = {
   text: string;
   phonetics: string;
 };
 
+type PhoneticToken =
+  | LookupToken
+  | BritishToken;
+
 type AlignedResultProps = {
   result: Result;
+  onlyPhonetics: boolean;
+  accent: Accent;
+  aiFallbacks: Record<string, string>;
 };
+
+function normalizeLookupWord(
+  word: string
+): string {
+  return word
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .toLowerCase()
+    .trim();
+}
+
+function getTokenKey(
+  accent: Accent,
+  word: string
+): string {
+  return `${accent}:${normalizeLookupWord(word)}`;
+}
 
 function AlignedResult({
   result,
+  onlyPhonetics,
+  accent,
+  aiFallbacks,
 }: AlignedResultProps) {
   const containerRef =
     useRef<HTMLDivElement>(null);
@@ -32,17 +68,70 @@ function AlignedResult({
     useRef<HTMLDivElement>(null);
 
   const tokenRefs =
-    useRef<(HTMLSpanElement | null)[]>([]);
+    useRef<
+      (HTMLSpanElement | null)[]
+    >([]);
 
   const [width, setWidth] =
     useState(0);
 
   const [lines, setLines] =
-    useState<LookupToken[][]>([]);
+    useState<PhoneticToken[][]>([]);
 
-  const tokens = lookupTokens(
-    result.text
-  );
+  /*
+   * IMPORTANT:
+   *
+   * American:
+   *   CMUdict creates the tokens.
+   *
+   * British:
+   *   Britfone creates the tokens.
+   *
+   * There is no cross-use between
+   * the two dictionaries.
+   */
+  const tokens: PhoneticToken[] =
+    accent === "American"
+      ? lookupTokens(result.text)
+      : lookupBritishTokens(result.text);
+
+  /*
+   * Apply AI fallback to tokens that
+   * were not found in the local dictionary.
+   */
+  const displayTokens =
+    tokens.map(token => {
+      if (
+        !("isWord" in token) ||
+        !token.isWord
+      ) {
+        return token;
+      }
+
+      if (token.phonetics) {
+        return token;
+      }
+
+      const key = getTokenKey(
+        accent,
+        token.text
+      );
+
+      const aiPhonetics =
+        aiFallbacks[key];
+
+      if (!aiPhonetics) {
+        return {
+          ...token,
+          phonetics: token.text,
+        };
+      }
+
+      return {
+        ...token,
+        phonetics: aiPhonetics,
+      };
+    });
 
   useLayoutEffect(() => {
     const element =
@@ -63,15 +152,12 @@ function AlignedResult({
     updateWidth();
 
     const observer =
-      new ResizeObserver(
-        updateWidth
-      );
+      new ResizeObserver(updateWidth);
 
     observer.observe(element);
 
-    return () => {
+    return () =>
       observer.disconnect();
-    };
   }, []);
 
   useLayoutEffect(() => {
@@ -82,14 +168,14 @@ function AlignedResult({
       return;
     }
 
-    const nextLines: LookupToken[][] =
+    const nextLines: PhoneticToken[][] =
       [];
 
     let currentTop:
       | number
       | null = null;
 
-    tokens.forEach(
+    displayTokens.forEach(
       (token, index) => {
         const element =
           tokenRefs.current[index];
@@ -108,6 +194,7 @@ function AlignedResult({
           ) > 1
         ) {
           nextLines.push([]);
+
           currentTop = top;
         }
 
@@ -118,13 +205,13 @@ function AlignedResult({
     );
 
     setLines(
-      (previousLines) => {
+      previousLines => {
         const previousText =
           previousLines
-            .map((line) =>
+            .map(line =>
               line
                 .map(
-                  (token) =>
+                  token =>
                     token.text
                 )
                 .join("")
@@ -133,10 +220,10 @@ function AlignedResult({
 
         const nextText =
           nextLines
-            .map((line) =>
+            .map(line =>
               line
                 .map(
-                  (token) =>
+                  token =>
                     token.text
                 )
                 .join("")
@@ -155,7 +242,9 @@ function AlignedResult({
     );
   }, [
     result.text,
+    accent,
     width,
+    aiFallbacks,
   ]);
 
   return (
@@ -168,11 +257,11 @@ function AlignedResult({
         ref={measureRef}
         aria-hidden="true"
       >
-        {tokens.map(
+        {displayTokens.map(
           (token, index) => (
             <span
               key={index}
-              ref={(element) => {
+              ref={element => {
                 tokenRefs.current[
                   index
                 ] = element;
@@ -191,22 +280,25 @@ function AlignedResult({
               className="aligned-line"
               key={index}
             >
-              <p className="original">
-                {line
-                  .map(
-                    (token) =>
-                      token.text
-                  )
-                  .join("")}
-              </p>
+              {!onlyPhonetics && (
+                <p className="original">
+                  {line
+                    .map(
+                      token =>
+                        token.text
+                    )
+                    .join("")}
+                </p>
+              )}
 
               <p className="phonetics">
                 {line
                   .map(
-                    (token) =>
+                    token =>
                       token.phonetics
                   )
-                  .join("")}
+                  .join("")
+                }
               </p>
             </div>
           )
@@ -222,6 +314,20 @@ function App() {
 
   const [results, setResults] =
     useState<Result[]>([]);
+
+  const [onlyPhonetics, setOnlyPhonetics] =
+    useState(false);
+
+  const [accent, setAccent] =
+    useState<Accent>("American");
+
+  const [aiFallbacks, setAiFallbacks] =
+    useState<Record<string, string>>(
+      {}
+    );
+
+  const [aiLoading, setAiLoading] =
+    useState(false);
 
   const [feedbackOpen, setFeedbackOpen] =
     useState(false);
@@ -239,65 +345,301 @@ function App() {
     useState("");
 
   const textareaRef =
-    useRef<HTMLTextAreaElement>(
-      null
-    );
+    useRef<HTMLTextAreaElement>(null);
+
+  /*
+   * Used to prevent an older AI request
+   * from overwriting a newer lookup.
+   */
+  const requestIdRef =
+    useRef(0);
 
   useLayoutEffect(() => {
-    if (textareaRef.current) {
-      textareaRef.current.focus();
-    }
+    textareaRef.current?.focus();
   }, []);
 
   const resizeTextarea = (
     element: HTMLTextAreaElement
   ) => {
-    element.style.height =
-      "auto";
+    element.style.height = "auto";
 
-    element.style.height = `${Math.max(
-      element.scrollHeight,
-      292
-    )}px`;
+    element.style.height =
+      `${Math.max(
+        element.scrollHeight,
+        292
+      )}px`;
+  };
+
+  const splitSentences = (
+    value: string
+  ): string[] => {
+    return value
+      .trim()
+      .split(
+        /(?<=[.!?])\s+/
+      )
+      .map(sentence =>
+        sentence.trim()
+      )
+      .filter(Boolean);
+  };
+
+  const buildResults = (
+    value: string,
+    selectedAccent: Accent
+  ): Result[] => {
+    const trimmed =
+      value.trim();
+
+    if (!trimmed) {
+      return [];
+    }
+
+    const sentences =
+      splitSentences(value);
+
+    return sentences.map(
+      sentence => ({
+        text: sentence,
+
+        /*
+         * The actual phonetics are
+         * generated inside AlignedResult
+         * from the correct dictionary.
+         */
+        phonetics:
+          selectedAccent === "American"
+            ? lookupText(sentence)
+            : sentence,
+      })
+    );
+  };
+
+  /*
+   * Find all words that are missing
+   * from the selected local dictionary.
+   *
+   * We send unique words only.
+   */
+  const findMissingWords = (
+    value: string,
+    selectedAccent: Accent
+  ): string[] => {
+    const missing = new Set<string>();
+
+    const sentences =
+      splitSentences(value);
+
+    for (const sentence of sentences) {
+      if (
+        selectedAccent ===
+        "British"
+      ) {
+        const tokens =
+          lookupBritishTokens(
+            sentence
+          );
+
+        for (const token of tokens) {
+          if (
+            token.isWord &&
+            !token.phonetics
+          ) {
+            missing.add(
+              token.text
+            );
+          }
+        }
+      } else {
+        const tokens =
+          lookupTokens(sentence);
+
+        for (const token of tokens) {
+          if (
+            "isWord" in token &&
+            token.isWord &&
+            !token.phonetics
+          ) {
+            missing.add(
+              token.text
+            );
+          }
+        }
+      }
+    }
+
+    return Array.from(missing);
+  };
+
+  /*
+   * Ask our Vercel API route for
+   * words that local dictionaries
+   * cannot find.
+   *
+   * The browser NEVER receives the
+   * OpenAI API key.
+   */
+  const fetchAIFallbacks = async (
+    value: string,
+    selectedAccent: Accent
+  ) => {
+    const missingWords =
+      findMissingWords(
+        value,
+        selectedAccent
+      );
+
+    if (
+      missingWords.length === 0
+    ) {
+      return;
+    }
+
+    const requestId =
+      ++requestIdRef.current;
+
+    setAiLoading(true);
+
+    try {
+      const response =
+        await fetch(
+          "/api/phonetics",
+          {
+            method: "POST",
+
+            headers: {
+              "Content-Type":
+                "application/json",
+            },
+
+            body: JSON.stringify({
+              accent: selectedAccent,
+              words: missingWords,
+            }),
+          }
+        );
+
+      if (!response.ok) {
+        throw new Error(
+          "AI pronunciation request failed."
+        );
+      }
+
+      const data =
+        (await response.json()) as {
+          results?: Record<
+            string,
+            string
+          >;
+        };
+
+      if (
+        requestId !==
+        requestIdRef.current
+      ) {
+        return;
+      }
+
+      const returned =
+        data.results ?? {};
+
+      const nextFallbacks: Record<
+        string,
+        string
+      > = {};
+
+      for (const word of missingWords) {
+        const pronunciation =
+          returned[word];
+
+        if (
+          typeof pronunciation ===
+            "string" &&
+          pronunciation.trim()
+        ) {
+          nextFallbacks[
+            getTokenKey(
+              selectedAccent,
+              word
+            )
+          ] =
+            pronunciation.trim();
+        }
+      }
+
+      if (
+        Object.keys(
+          nextFallbacks
+        ).length > 0
+      ) {
+        setAiFallbacks(
+          previous => ({
+            ...previous,
+            ...nextFallbacks,
+          })
+        );
+      }
+    } catch (error) {
+      console.error(
+        "AI pronunciation fallback failed:",
+        error
+      );
+    } finally {
+      if (
+        requestId ===
+        requestIdRef.current
+      ) {
+        setAiLoading(false);
+      }
+    }
+  };
+
+  const updateText = (
+    value: string,
+    selectedAccent: Accent
+  ) => {
+    setText(value);
+
+    setResults(
+      buildResults(
+        value,
+        selectedAccent
+      )
+    );
+
+    void fetchAIFallbacks(
+      value,
+      selectedAccent
+    );
   };
 
   const handleTextChange = (
     value: string,
     element: HTMLTextAreaElement
   ) => {
-    setText(value);
-
     resizeTextarea(element);
 
-    const trimmed =
-      value.trim();
+    updateText(
+      value,
+      accent
+    );
+  };
 
-    if (!trimmed) {
-      setResults([]);
-      return;
-    }
-
-    const sentences =
-      trimmed
-        .split(
-          /(?<=[.!?])\s+/
-        )
-        .map(
-          (sentence) =>
-            sentence.trim()
-        )
-        .filter(Boolean);
+  const handleAccentChange = (
+    nextAccent: Accent
+  ) => {
+    setAccent(nextAccent);
 
     setResults(
-      sentences.map(
-        (sentence) => ({
-          text: sentence,
-          phonetics:
-            lookupText(
-              sentence
-            ),
-        })
+      buildResults(
+        text,
+        nextAccent
       )
+    );
+
+    void fetchAIFallbacks(
+      text,
+      nextAccent
     );
   };
 
@@ -322,12 +664,14 @@ function App() {
             "https://formspree.io/f/myezzawg",
             {
               method: "POST",
+
               headers: {
                 "Content-Type":
                   "application/json",
                 Accept:
                   "application/json",
               },
+
               body: JSON.stringify({
                 message,
                 _subject:
@@ -404,7 +748,7 @@ function App() {
           <textarea
             ref={textareaRef}
             value={text}
-            onChange={(e) =>
+            onChange={e =>
               handleTextChange(
                 e.target.value,
                 e.target
@@ -417,45 +761,116 @@ function App() {
           />
         </div>
 
-        <div className="result-card">
-          <div className="results">
-            {results.length === 0 && (
-              <div className="empty-result">
-                Transcription
-              </div>
-            )}
+        <div className="output-column">
+          <div className="output-controls">
+            <label className="phonetics-toggle">
+              <input
+                type="checkbox"
+                checked={onlyPhonetics}
+                onChange={e =>
+                  setOnlyPhonetics(
+                    e.target.checked
+                  )
+                }
+              />
 
-            {results.map(
-              (result, index) => (
-                <div
-                  className="result"
-                  key={index}
-                >
-                  <AlignedResult
-                    result={result}
-                  />
-                </div>
-              )
-            )}
+              <span>
+                Only phonetics
+              </span>
+            </label>
+
+            <select
+              className="accent-select"
+              value={accent}
+              onChange={e =>
+                handleAccentChange(
+                  e.target.value as Accent
+                )
+              }
+              aria-label="Accent"
+            >
+              <option value="American">
+                American
+              </option>
+
+              <option value="British">
+                British
+              </option>
+            </select>
           </div>
+
+          <div className="result-card">
+            <div className="results">
+              {results.length === 0 && (
+                <div className="empty-result">
+                  Transcription
+                </div>
+              )}
+
+              {results.map(
+                (result, index) => (
+                  <div
+                    className="result"
+                    key={`${accent}-${index}`}
+                  >
+                    <AlignedResult
+                      result={result}
+                      onlyPhonetics={
+                        onlyPhonetics
+                      }
+                      accent={accent}
+                      aiFallbacks={
+                        aiFallbacks
+                      }
+                    />
+                  </div>
+                )
+              )}
+            </div>
+          </div>
+
+          {aiLoading && (
+            <div
+              style={{
+                marginTop: "8px",
+                fontSize: "12px",
+                opacity: 0.45,
+                textAlign: "right",
+              }}
+            >
+              Looking up pronunciation...
+            </div>
+          )}
         </div>
       </section>
 
       <footer className="footer">
         <p>
-          Pronunciation data adapted from the{" "}
+          Pronunciation data adapted
+          from the{" "}
           <a
             href="https://github.com/cmusphinx/cmudict"
             target="_blank"
             rel="noopener noreferrer"
           >
-            Carnegie Mellon Pronouncing Dictionary (CMUdict)
+            Carnegie Mellon Pronouncing
+            Dictionary (CMUdict)
           </a>
-          , maintained by Carnegie Mellon University.
           {" "}
-          Website designed and built by{" "}
+          for American English and{" "}
           <a
-            href="https://buithanhuong.com"
+            href="https://github.com/JoseLlarena/Britfone"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            Britfone
+          </a>
+          {" "}
+          for British English.
+          Website designed and built
+          by{" "}
+          <a
+            href="https://buithanhuong.com/"
             target="_blank"
             rel="noopener noreferrer"
           >
@@ -468,7 +883,7 @@ function App() {
       {feedbackOpen && (
         <div
           className="feedback-overlay"
-          onMouseDown={(e) => {
+          onMouseDown={e => {
             if (
               e.target ===
               e.currentTarget
@@ -499,13 +914,16 @@ function App() {
                 </h2>
 
                 <p>
-                  Your feedback has been sent.
+                  Your feedback has
+                  been sent.
                 </p>
 
                 <button
                   className="feedback-send"
                   type="button"
-                  onClick={closeFeedback}
+                  onClick={
+                    closeFeedback
+                  }
                 >
                   Done
                 </button>
@@ -519,7 +937,7 @@ function App() {
                 <textarea
                   className="feedback-textarea"
                   value={feedback}
-                  onChange={(e) =>
+                  onChange={e =>
                     setFeedback(
                       e.target.value
                     )
@@ -538,7 +956,9 @@ function App() {
                   <button
                     className="feedback-cancel"
                     type="button"
-                    onClick={closeFeedback}
+                    onClick={
+                      closeFeedback
+                    }
                   >
                     Cancel
                   </button>
