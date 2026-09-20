@@ -1,6 +1,7 @@
 :root {
   --color-primary: #000000;
   --color-background: #f3f3f3;
+  --color-accent: #22368F;
   --color-surface: #ffffff;
   --color-text: #000000;
   --color-text-muted: #555555;
@@ -100,7 +101,7 @@ select {
 }
 
 .hero h1 span {
-  color: #294b9b;
+  color: var(--color-accent);
   font-weight: 700;
 }
 
@@ -110,7 +111,7 @@ select {
 
 .workspace {
   width: calc(100% - 240px);
-  margin: 86px auto 0;
+  margin: 110px auto 0;
   display: grid;
   grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   gap: 32px;
@@ -145,14 +146,14 @@ select {
   overflow: hidden;
   background: transparent;
   color: #202020;
-  caret-color: #22368f;
-  caret-width: 2px;
+  caret-color: var(--color-accent);
+  caret-width: 3px;
   font: inherit;
   line-height: 1.8;
 }
 
 .input-card textarea::placeholder {
-  color: #202020;
+  color: #000;
   opacity: 0.35;
 }
 
@@ -176,7 +177,7 @@ select {
 .output-controls {
   position: absolute;
   right: 0;
-  bottom: calc(100% + 14px);
+  bottom: calc(100% + 10px);
 
   display: flex;
   align-items: center;

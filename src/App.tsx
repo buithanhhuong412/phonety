@@ -993,7 +993,7 @@ function App() {
                 e.target
               )
             }
-            placeholder="Type or paste your text..."
+            placeholder="Type or paste your words, sentences or paragraphs..."
             spellCheck={false}
             autoCorrect="off"
             autoCapitalize="off"
