@@ -1412,7 +1412,7 @@ function App() {
           </a>
           {" "}
           for British English.
-          Website designed and built
+          {/* Website designed and built
           by{" "}
           <a
             href="https://buithanhuong.com/"
@@ -1421,7 +1421,7 @@ function App() {
           >
             Thanh Huong Bui
           </a>
-          .
+          .*/}
         </p>
       </footer>
 

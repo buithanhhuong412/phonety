@@ -582,9 +582,8 @@ select {
     font-size: 14px;
   }
 
-  /* Title moves higher on mobile */
   .hero {
-    margin-top: 22px;
+    margin-top: 18px;
   }
 
   .hero h1 {
@@ -593,16 +592,17 @@ select {
     letter-spacing: -0.7px;
   }
 
-  /* The two main cards share the remaining screen height equally */
+  /* Mobile: input and output share the available screen height. */
   .workspace {
     width: 100%;
-    height: calc(100dvh - 174px);
+    height: calc(100dvh - 150px);
     min-height: 0;
-    margin-top: 24px;
+    margin-top: 20px;
     display: grid;
-    grid-template-columns: 1fr;
-    grid-template-rows: repeat(2, minmax(0, 1fr));
-    gap: 16px;
+    grid-template-columns: minmax(0, 1fr);
+    grid-template-rows: minmax(0, 1fr) minmax(0, 1fr);
+    gap: 48px;
+    align-items: stretch;
   }
 
   .input-card,
@@ -623,26 +623,46 @@ select {
     padding: 22px 20px;
   }
 
+  /*
+   * IMPORTANT: use the real textarea caret on mobile.
+   * The custom overlay caret is disabled here so it can never interfere
+   * with touch, focus, selection, or typing.
+   */
+  .textarea-wrap {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    min-width: 0;
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
   .input-card textarea {
+    position: relative;
+    z-index: 2;
+    display: block;
     width: 100%;
     height: 100%;
     min-height: 0;
+    flex: 1 1 auto;
+    margin: 0;
+    pointer-events: auto !important;
+    user-select: text;
+    -webkit-user-select: text;
+    -webkit-touch-callout: default;
+    touch-action: auto;
+    caret-color: var(--color-accent) !important;
     font-size: 16px;
     line-height: 1.5;
   }
 
-  .textarea-caret-measure {
-    font-size: 16px;
-    line-height: 1.5;
-  }
-
+  .textarea-caret-measure,
   .custom-caret {
-    width: 4px;
-    min-width: 4px;
+    display: none !important;
+    pointer-events: none !important;
   }
 
-  /* Keep the output card at the same height as the input card.
-     Controls sit in the gap above it instead of consuming card height. */
+  /* Keep the output controls in their existing position above the output. */
   .output-column {
     position: relative;
     display: block;
@@ -653,20 +673,24 @@ select {
     z-index: 5;
     right: 0;
     bottom: calc(100% + 8px);
-    width: auto;
-    margin-bottom: 0 !important;
-    justify-content: flex-end;
+    width: 100%;
+    height: 40px;
+    margin: 0 !important;
+    padding: 0;
+    display: flex;
     align-items: center;
+    justify-content: center;
     gap: 8px !important;
     flex-wrap: nowrap;
   }
 
   .phonetics-toggle {
-    height: 40px;
+    height: 40px !important;
     flex-shrink: 0;
   }
 
   .accent-toggle {
+    height: 40px !important;
     flex-shrink: 0;
   }
 
@@ -695,7 +719,7 @@ select {
   }
 
   .footer {
-    margin-top: 18px;
+    margin-top: 14px;
     padding-top: 4px;
   }
 
@@ -748,7 +772,7 @@ select {
   }
 
   .hero {
-    margin-top: 18px;
+    margin-top: 14px;
   }
 
   .hero h1 {
@@ -756,9 +780,8 @@ select {
   }
 
   .workspace {
-    height: calc(100dvh - 160px);
-    margin-top: 20px;
-    gap: 14px;
+    margin-top: 18px;
+    gap: 48px;
   }
 
   .input-card {
@@ -780,9 +803,113 @@ select {
   }
 }
 
-.controls .control,
-.controls select {
-  background: #fff;
-  border-radius: 24px;
-  padding: 8px 14px;
+/* Editable pronunciation fields */
+.input-card .textarea-wrap {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  min-width: 0;
+}
+
+.input-card textarea {
+  position: relative;
+  z-index: 2;
+  pointer-events: auto;
+  touch-action: auto;
+  user-select: text;
+  -webkit-user-select: text;
+  caret-color: auto !important;
+}
+
+.output-editor {
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  margin: 0;
+  padding: 0 56px 0 0;
+  border: 0;
+  outline: none;
+  resize: none;
+  overflow-y: auto;
+  background: transparent;
+  color: var(--color-text);
+  font-family: var(--font-primary);
+  font-size: 16px;
+  font-weight: 500;
+  line-height: 1.5;
+  caret-color: var(--color-accent);
+  pointer-events: auto;
+  touch-action: auto;
+  user-select: text;
+  -webkit-user-select: text;
+}
+
+.output-editor::placeholder {
+  color: var(--color-text-muted);
+  opacity: 0.55;
+}
+
+.reverse-loading {
+  position: absolute;
+  left: 32px;
+  bottom: 18px;
+  font-size: 12px;
+  line-height: 1.4;
+  opacity: 0.45;
+  pointer-events: none;
+}
+
+@media (max-width: 800px) {
+  .input-card textarea,
+  .output-editor {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .output-editor {
+    padding-right: 44px;
+  }
+
+  .reverse-loading {
+    left: 20px;
+    bottom: 14px;
+  }
+}
+
+/* Mobile output editor: keep the textarea itself as the interactive layer. */
+@media (max-width: 800px) {
+  .result-card {
+    position: relative;
+    isolation: isolate;
+  }
+
+  .output-editor {
+    position: relative;
+    z-index: 3;
+    display: block;
+    width: 100%;
+    min-height: 0;
+    height: 100%;
+    flex: 1 1 auto;
+    pointer-events: auto !important;
+    touch-action: auto !important;
+    user-select: text !important;
+    -webkit-user-select: text !important;
+    caret-color: var(--color-accent) !important;
+  }
+
+  .output-actions {
+    z-index: 4 !important;
+  }
+
+  .reverse-loading {
+    z-index: 4;
+    pointer-events: none !important;
+  }
+
+  /* Keep 8px breathing room above and below the control group. */
+  .output-controls {
+    margin-top: 8px !important;
+    margin-bottom: 8px !important;
+  }
 }
