@@ -659,7 +659,6 @@ select {
 
   .textarea-caret-measure,
   .custom-caret {
-    display: none !important;
     pointer-events: none !important;
   }
 
