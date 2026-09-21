@@ -151,8 +151,8 @@ select {
   resize: none;
   overflow: hidden;
   background: transparent;
-  color: #202020;
-  caret-color: transparent;
+  color: #000;
+  caret-color: var(--color-accent) !important;
   font: inherit;
   line-height: 1.8;
   position: relative;
@@ -180,7 +180,7 @@ select {
 .custom-caret {
   position: absolute;
   z-index: 2;
-  width: 5px;
+  width: 5px !important;
   min-width: 5px;
   background: var(--color-accent);
   border-radius: 2px;
@@ -755,10 +755,16 @@ select {
   .feedback-textarea {
     min-height: 140px;
     font-size: 15px;
+    resize: none;
+    overflow-y: auto;
   }
 
   .feedback-actions {
     margin-top: 14px;
+  }
+
+  .feedback-form textarea {
+    resize: none;
   }
 }
 
