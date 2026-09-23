@@ -410,10 +410,10 @@ function App() {
     useState(false);
 
   /*
-   * British is the default accent.
+   * American is the default accent.
    */
   const [accent, setAccent] =
-    useState<Accent>("British");
+    useState<Accent>("American");
 
   const [aiFallbacks, setAiFallbacks] =
     useState<Record<string, string>>(
@@ -424,6 +424,9 @@ function App() {
     useState(false);
 
   const [isSpeaking, setIsSpeaking] =
+    useState(false);
+
+  const [copied, setCopied] =
     useState(false);
 
   const [feedbackOpen, setFeedbackOpen] =
@@ -822,11 +825,19 @@ function App() {
       await navigator.clipboard.writeText(
         output
       );
+
+      setCopied(true);
+
+      window.setTimeout(() => {
+        setCopied(false);
+      }, 1500);
     } catch (error) {
       console.error(
         "Failed to copy:",
         error
       );
+
+      setCopied(false);
     }
   };
 
@@ -1087,47 +1098,6 @@ function App() {
                 type="button"
                 onClick={() =>
                   handleAccentChange(
-                    "American"
-                  )
-                }
-                aria-pressed={
-                  accent ===
-                  "American"
-                }
-                style={{
-                  border:
-                    "none",
-                  borderRadius:
-                    "20px",
-                  padding:
-                    "7px 14px",
-                  background:
-                    accent ===
-                    "American"
-                      ? "#111111"
-                      : "transparent",
-                  color:
-                    accent ===
-                    "American"
-                      ? "#ffffff"
-                      : "#111111",
-                  cursor:
-                    "pointer",
-                  fontSize:
-                    "13px",
-                  fontWeight:
-                    500,
-                  transition:
-                    "all 0.2s ease",
-                }}
-              >
-                American
-              </button>
-
-              <button
-                type="button"
-                onClick={() =>
-                  handleAccentChange(
                     "British"
                   )
                 }
@@ -1163,6 +1133,47 @@ function App() {
                 }}
               >
                 British
+              </button>
+
+              <button
+                type="button"
+                onClick={() =>
+                  handleAccentChange(
+                    "American"
+                  )
+                }
+                aria-pressed={
+                  accent ===
+                  "American"
+                }
+                style={{
+                  border:
+                    "none",
+                  borderRadius:
+                    "20px",
+                  padding:
+                    "7px 14px",
+                  background:
+                    accent ===
+                    "American"
+                      ? "#111111"
+                      : "transparent",
+                  color:
+                    accent ===
+                    "American"
+                      ? "#ffffff"
+                      : "#111111",
+                  cursor:
+                    "pointer",
+                  fontSize:
+                    "13px",
+                  fontWeight:
+                    500,
+                  transition:
+                    "all 0.2s ease",
+                }}
+              >
+                American
               </button>
             </div>
           </div>
@@ -1330,6 +1341,16 @@ function App() {
                     />
                   </svg>
                 </button>
+
+                {copied && (
+                  <span
+                    className="copied-feedback"
+                    role="status"
+                    aria-live="polite"
+                  >
+                    Copied
+                  </span>
+                )}
               </div>
             )}
 

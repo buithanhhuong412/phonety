@@ -201,7 +201,7 @@ select {
 }
 
 .input-card textarea::placeholder {
-  color: #202020;
+  color: #000;
   opacity: 0.35;
 }
 
