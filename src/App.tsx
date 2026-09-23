@@ -983,7 +983,7 @@ function App() {
 
       <section className="hero">
         <h1>
-          Look up words in
+          Look up English words in
           the
           <br />
           <span>

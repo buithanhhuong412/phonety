@@ -225,7 +225,7 @@ select {
 .output-controls {
   position: absolute;
   right: 0;
-  bottom: calc(100% + 10px);
+  bottom: calc(100% + 12px);
   display: flex;
   align-items: center;
   gap: 24px;
@@ -241,8 +241,8 @@ select {
 }
 
 .phonetics-toggle input {
-  width: 14px;
-  height: 14px;
+  width: 13px;
+  height: 13px;
   margin: 0;
   accent-color: #000;
   cursor: pointer;
@@ -840,7 +840,7 @@ select {
   background: transparent;
   color: var(--color-text);
   font-family: var(--font-primary);
-  font-size: 16px;
+  font-size: 15px;
   font-weight: 500;
   line-height: 1.5;
   caret-color: var(--color-accent);
